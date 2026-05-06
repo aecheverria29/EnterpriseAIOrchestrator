@@ -8,5 +8,7 @@ public interface IWorkflowRunStore
 
     Task<ProcessWorkRequestResult?> GetByRunIdAsync(Guid runId, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<ProcessWorkRequestResult>> GetRecentAsync(int count, CancellationToken cancellationToken = default);
+
     Task UpdateAsync(ProcessWorkRequestResult result, CancellationToken cancellationToken = default);
 }

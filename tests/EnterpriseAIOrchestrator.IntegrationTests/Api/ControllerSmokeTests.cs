@@ -124,6 +124,24 @@ public sealed class ControllerSmokeTests
     }
 
     [Fact]
+    public async Task WorkRequestsController_GetRecent_ReturnsRunsOrderedByStartedAt()
+    {
+        var store = new InMemoryWorkflowRunStore();
+        var olderRun = CreateInReviewRun() with { StartedAt = DateTimeOffset.UtcNow.AddMinutes(-10) };
+        var newerRun = CreateInReviewRun() with { StartedAt = DateTimeOffset.UtcNow };
+        await store.SaveAsync(olderRun);
+        await store.SaveAsync(newerRun);
+
+        var controller = new WorkRequestsController(new StubWorkRequestProcessingService(newerRun), store);
+
+        var actionResult = await controller.GetRecent(20, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var response = Assert.IsAssignableFrom<IReadOnlyCollection<WorkflowResultDto>>(okResult.Value);
+        Assert.Equal([newerRun.RunId, olderRun.RunId], response.Select(run => run.RunId));
+    }
+
+    [Fact]
     public async Task WorkRequestsController_Approve_ReturnsBadRequestWhenPerformedByMissing()
     {
         var store = new InMemoryWorkflowRunStore();

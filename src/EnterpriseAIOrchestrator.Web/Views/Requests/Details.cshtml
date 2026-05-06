@@ -1,0 +1,134 @@
+@model WorkflowRunDetailsViewModel
+@{
+    ViewData["Title"] = "Request Details";
+}
+
+<div class="page-heading split-heading">
+    <div>
+        <p class="eyebrow">Workflow run</p>
+        <h1>@Model.Summary.OriginalTitle</h1>
+        <p><code>@Model.Summary.RunId</code></p>
+    </div>
+    <span class="status-badge @BadgeClass(Model.Summary.WorkflowStatus)">@Model.Summary.WorkflowStatus</span>
+</div>
+
+<section class="details-grid">
+    <div class="metric-card">
+        <span>Classification</span>
+        <strong>@Model.Classification</strong>
+    </div>
+    <div class="metric-card">
+        <span>AssignedRoute</span>
+        <strong>@Model.AssignedRoute</strong>
+    </div>
+    <div class="metric-card">
+        <span>BusinessUseCase</span>
+        <strong>@Model.Summary.BusinessUseCase</strong>
+    </div>
+    <div class="metric-card">
+        <span>DefaultOwner</span>
+        <strong>@Model.Summary.DefaultOwner</strong>
+    </div>
+    <div class="metric-card">
+        <span>RequiresApprovalAction</span>
+        <strong>@(Model.Summary.RequiresApprovalAction ? "Yes" : "No")</strong>
+    </div>
+    <div class="metric-card">
+        <span>TargetSlaHours</span>
+        <strong>@Model.TargetSlaHours</strong>
+    </div>
+    <div class="metric-card">
+        <span>ReviewDecision</span>
+        <strong>@(Model.ReviewDecision ?? "Pending")</strong>
+    </div>
+    <div class="metric-card">
+        <span>StartedAt</span>
+        <strong>@Model.Summary.StartedAt.ToString("g")</strong>
+    </div>
+</section>
+
+<section class="content-grid">
+    <div class="panel">
+        <h2>Summary</h2>
+        <p>@Model.FinalSummary</p>
+    </div>
+
+    @if (Model.Summary.RequiresApprovalAction)
+    {
+        <div class="panel">
+            <h2>Review Action</h2>
+            <form asp-action="Approve" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="PerformedBy" />
+                <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Comment"></textarea>
+                <button type="submit" class="btn btn-success">Approve</button>
+            </form>
+            <form asp-action="Reject" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
+                <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="PerformedBy" />
+                <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Comment"></textarea>
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </form>
+        </div>
+    }
+</section>
+
+<section class="content-grid">
+    <div class="panel">
+        <h2>ValidationMessages</h2>
+        @if (Model.ValidationMessages.Count == 0)
+        {
+            <p class="muted">No validation messages.</p>
+        }
+        else
+        {
+            <ul class="clean-list">
+                @foreach (var message in Model.ValidationMessages)
+                {
+                    <li>@message</li>
+                }
+            </ul>
+        }
+    </div>
+    <div class="panel">
+        <h2>StepsExecuted</h2>
+        <ul class="clean-list">
+            @foreach (var step in Model.StepsExecuted)
+            {
+                <li>@step</li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>AuditTrail</h2>
+    <div class="timeline">
+        @foreach (var entry in Model.AuditTrail)
+        {
+            <div class="timeline-item">
+                <span>@entry.Timestamp.ToString("g")</span>
+                <strong>@entry.EventType</strong>
+                <p>@entry.Message</p>
+                @if (!string.IsNullOrWhiteSpace(entry.PerformedBy))
+                {
+                    <small>@entry.PerformedBy</small>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@functions {
+    private static string BadgeClass(string status) => status switch
+    {
+        "InReview" => "status-review",
+        "Approved" => "status-approved",
+        "Rejected" => "status-rejected",
+        "Completed" => "status-completed",
+        _ => "status-default"
+    };
+}

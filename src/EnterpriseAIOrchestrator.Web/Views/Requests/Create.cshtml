@@ -1,0 +1,61 @@
+@model CreateWorkRequestViewModel
+@{
+    ViewData["Title"] = "Create Request";
+}
+
+<div class="page-heading">
+    <p class="eyebrow">New workflow run</p>
+    <h1>Create Request</h1>
+    <p>Submit a business work request to the API orchestration pipeline.</p>
+</div>
+
+<form asp-action="Create" method="post" class="form-surface">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-grid">
+        <div class="field field-wide">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="field field-wide">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Department"></label>
+            <input asp-for="Department" class="form-control" />
+            <span asp-validation-for="Department" class="text-danger"></span>
+        </div>
+        <div class="field">
+            <label asp-for="RequestedBy"></label>
+            <input asp-for="RequestedBy" class="form-control" />
+            <span asp-validation-for="RequestedBy" class="text-danger"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Priority"></label>
+            <select asp-for="Priority" class="form-select">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+            <span asp-validation-for="Priority" class="text-danger"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Tags"></label>
+            <input asp-for="Tags" class="form-control" placeholder="access, finance, urgent" />
+            <span asp-validation-for="Tags" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Request</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

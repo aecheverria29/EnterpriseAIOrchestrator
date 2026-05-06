@@ -1,0 +1,46 @@
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Enterprise AI Orchestrator";
+}
+
+<section class="page-hero">
+    <div>
+        <p class="eyebrow">Workflow orchestration demo</p>
+        <h1>Enterprise AI Orchestrator</h1>
+        <p class="hero-copy">
+            A .NET workflow API that classifies enterprise work requests, determines the business use case,
+            applies review policy, and produces an auditable run summary.
+        </p>
+    </div>
+    <div class="health-panel">
+        <span class="status-dot @(Model.ApiHealth.IsAvailable ? "status-dot-ok" : "status-dot-down")"></span>
+        <div>
+            <span class="panel-label">API health</span>
+            <strong>@Model.ApiHealth.Status</strong>
+            <small>@Model.ApiHealth.Service</small>
+            @if (Model.ApiHealth.UtcTime is not null)
+            {
+                <small>UTC @Model.ApiHealth.UtcTime.Value.ToString("u")</small>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.ApiHealth.ErrorMessage))
+            {
+                <small>@Model.ApiHealth.ErrorMessage</small>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="quick-actions">
+    <a class="action-card" asp-controller="Requests" asp-action="Create">
+        <span>Create Request</span>
+        <strong>Start a new orchestrated workflow run</strong>
+    </a>
+    <a class="action-card" asp-controller="Requests" asp-action="Lookup">
+        <span>Lookup Request</span>
+        <strong>Find a run by its Run ID</strong>
+    </a>
+    <a class="action-card" asp-controller="Requests" asp-action="Recent">
+        <span>Recent Runs</span>
+        <strong>Review the latest in-memory workflow activity</strong>
+    </a>
+</section>

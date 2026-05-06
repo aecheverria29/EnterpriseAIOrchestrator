@@ -74,6 +74,15 @@ public sealed class WorkRequestsController : ControllerBase
         return Ok(ToDto(result));
     }
 
+    [HttpGet("recent")]
+    public async Task<ActionResult<IReadOnlyCollection<WorkflowResultDto>>> GetRecent(
+        [FromQuery] int count = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var results = await _workflowRunStore.GetRecentAsync(count, cancellationToken);
+        return Ok(results.Select(ToDto).ToArray());
+    }
+
     [HttpPost("{runId:guid}/approve")]
     public Task<ActionResult<WorkflowResultDto>> Approve(
         Guid runId,
