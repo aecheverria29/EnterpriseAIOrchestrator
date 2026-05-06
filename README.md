@@ -123,6 +123,7 @@ Implemented today:
 - ASP.NET Core MVC demo UI
 - API health check
 - Automated tests for domain, application, orchestration behavior, and controller flows
+- Cloud deployment
 
 Not implemented yet:
 
@@ -130,8 +131,7 @@ Not implemented yet:
 - Authentication or authorization
 - Microsoft Agent Framework integration
 - External AI provider integration
-- Cloud deployment
-
+  
 ## API Endpoints
 
 | Method | Endpoint | Purpose |
