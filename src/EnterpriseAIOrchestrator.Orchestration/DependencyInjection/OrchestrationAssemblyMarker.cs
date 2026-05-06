@@ -1,0 +1,3 @@
+namespace EnterpriseAIOrchestrator.Orchestration.DependencyInjection;
+
+public sealed class OrchestrationAssemblyMarker;
