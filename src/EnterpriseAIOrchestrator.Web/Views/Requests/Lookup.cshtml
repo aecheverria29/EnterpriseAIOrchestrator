@@ -1,25 +1,28 @@
 @model LookupRequestViewModel
 @{
-    ViewData["Title"] = "Lookup Request";
+    ViewData["Title"] = "Lookup Run";
 }
 
-<div class="page-heading">
-    <p class="eyebrow">Run lookup</p>
-    <h1>Lookup Request</h1>
-    <p>Paste a workflow Run ID to open its orchestration details.</p>
-</div>
+<div class="lookup-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Run inspection</p>
+        <h1>Lookup Run</h1>
+        <p>Enter a workflow run ID to inspect its current state and audit history.</p>
+    </div>
 
-<form asp-action="Lookup" method="post" class="form-surface narrow">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div class="field">
-        <label asp-for="RunId"></label>
-        <input asp-for="RunId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
-        <span asp-validation-for="RunId" class="text-danger"></span>
-    </div>
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Open Details</button>
-    </div>
-</form>
+    <form asp-action="Lookup" method="post" class="form-surface lookup-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="field">
+            <label asp-for="RunId"></label>
+            <input asp-for="RunId" class="form-control form-control-lg" placeholder="00000000-0000-0000-0000-000000000000" />
+            <span asp-validation-for="RunId" class="text-danger"></span>
+        </div>
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Back to Dashboard</a>
+            <button type="submit" class="btn btn-primary">Open Run Details</button>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

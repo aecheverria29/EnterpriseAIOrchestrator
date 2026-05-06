@@ -1,46 +1,112 @@
 @model HomeIndexViewModel
 @{
-    ViewData["Title"] = "Enterprise AI Orchestrator";
+    ViewData["Title"] = "Dashboard";
 }
 
-<section class="page-hero">
-    <div>
-        <p class="eyebrow">Workflow orchestration demo</p>
-        <h1>Enterprise AI Orchestrator</h1>
+<section class="dashboard-hero">
+    <div class="hero-content">
+        <p class="eyebrow">Operations dashboard</p>
+        <h1>Enterprise AI Workflow Orchestrator</h1>
         <p class="hero-copy">
-            A .NET workflow API that classifies enterprise work requests, determines the business use case,
-            applies review policy, and produces an auditable run summary.
+            Internal request intake, routing, review, and audit tracking for business operations.
         </p>
-    </div>
-    <div class="health-panel">
-        <span class="status-dot @(Model.ApiHealth.IsAvailable ? "status-dot-ok" : "status-dot-down")"></span>
-        <div>
-            <span class="panel-label">API health</span>
-            <strong>@Model.ApiHealth.Status</strong>
-            <small>@Model.ApiHealth.Service</small>
-            @if (Model.ApiHealth.UtcTime is not null)
-            {
-                <small>UTC @Model.ApiHealth.UtcTime.Value.ToString("u")</small>
-            }
-            @if (!string.IsNullOrWhiteSpace(Model.ApiHealth.ErrorMessage))
-            {
-                <small>@Model.ApiHealth.ErrorMessage</small>
-            }
+        <div class="tech-pills">
+            <span>.NET 10</span>
+            <span>MVC + Web API</span>
+            <span>Rule-Based Routing</span>
+            <span>Human-in-the-Loop</span>
+            <span>Audit Trail</span>
         </div>
+    </div>
+    <div class="dashboard-brief">
+        <span class="panel-label">Processing posture</span>
+        <strong>Rule-based orchestration</strong>
+        <p>Requests are classified, routed, reviewed when policy requires it, and stored with a traceable audit history.</p>
     </div>
 </section>
 
-<section class="quick-actions">
-    <a class="action-card" asp-controller="Requests" asp-action="Create">
-        <span>Create Request</span>
-        <strong>Start a new orchestrated workflow run</strong>
-    </a>
-    <a class="action-card" asp-controller="Requests" asp-action="Lookup">
-        <span>Lookup Request</span>
-        <strong>Find a run by its Run ID</strong>
-    </a>
-    <a class="action-card" asp-controller="Requests" asp-action="Recent">
+<section class="summary-strip">
+    <div class="metric-card metric-health">
+        <span>API Health</span>
+        <strong>
+            <span class="status-dot @(Model.ApiHealth.IsAvailable ? "status-dot-ok" : "status-dot-down")"></span>
+            @Model.ApiHealth.Status
+        </strong>
+        <small>@Model.ApiHealth.Service</small>
+    </div>
+    <div class="metric-card">
+        <span>Requests In Review</span>
+        <strong>@Model.RequestsInReview</strong>
+        <small>Derived from recent workflow runs</small>
+    </div>
+    <div class="metric-card">
         <span>Recent Runs</span>
-        <strong>Review the latest in-memory workflow activity</strong>
-    </a>
+        <strong>@Model.RecentRunCount</strong>
+        <small>Latest in-memory workflow activity</small>
+    </div>
+    <div class="metric-card">
+        <span>Default Processing Mode</span>
+        <strong>Deterministic</strong>
+        <small>Rule-based classification and routing</small>
+    </div>
 </section>
+
+<section class="dashboard-grid">
+    <div class="panel action-panel">
+        <div class="section-heading">
+            <span class="panel-label">Quick actions</span>
+            <h2>Move work through the pipeline</h2>
+        </div>
+        <div class="quick-actions">
+            <a class="action-card action-primary" asp-controller="Requests" asp-action="Create">
+                <span>Submit Request</span>
+                <strong>Create a new workflow run</strong>
+            </a>
+            <a class="action-card" asp-controller="Requests" asp-action="Lookup">
+                <span>Lookup Run</span>
+                <strong>Inspect current state and audit history</strong>
+            </a>
+            <a class="action-card" asp-controller="Requests" asp-action="Recent">
+                <span>View Recent Runs</span>
+                <strong>Review intake activity across operations</strong>
+            </a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="section-heading">
+            <span class="panel-label">Recent activity</span>
+            <h2>Latest workflow runs</h2>
+        </div>
+        @if (Model.RecentRuns.Count == 0)
+        {
+            <p class="empty-state">No recent runs are available yet.</p>
+        }
+        else
+        {
+            <div class="compact-run-list">
+                @foreach (var run in Model.RecentRuns.Take(5))
+                {
+                    <a asp-controller="Requests" asp-action="Details" asp-route-runId="@run.RunId">
+                        <span>
+                            <strong>@run.OriginalTitle</strong>
+                            <small>@run.BusinessUseCase &middot; @run.DefaultOwner</small>
+                        </span>
+                        <span class="status-badge @BadgeClass(run.WorkflowStatus)">@run.WorkflowStatus</span>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@functions {
+    private static string BadgeClass(string status) => status switch
+    {
+        "InReview" => "status-review",
+        "Approved" => "status-approved",
+        "Rejected" => "status-rejected",
+        "Completed" => "status-completed",
+        _ => "status-default"
+    };
+}

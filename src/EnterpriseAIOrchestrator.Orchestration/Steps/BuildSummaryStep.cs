@@ -1,4 +1,5 @@
 using EnterpriseAIOrchestrator.Application.Abstractions;
+using EnterpriseAIOrchestrator.Application.Common;
 using EnterpriseAIOrchestrator.Application.Pipeline;
 
 namespace EnterpriseAIOrchestrator.Orchestration.Steps;
@@ -18,8 +19,14 @@ public sealed class BuildSummaryStep : IWorkRequestProcessingStep
         var classification = context.Classification ?? "UnclassifiedRequest";
         var assignedRoute = context.AssignedRoute ?? "ManualTriage";
 
-        context.FinalSummary =
-            $"Request '{context.WorkRequest.Title}' was normalized, classified as '{classification}', routed to '{assignedRoute}', mapped to '{context.BusinessUseCase}', assigned to '{context.DefaultOwner}' with SLA {context.TargetSlaHours}h, and is currently '{context.WorkflowStatus}'.";
+        context.FinalSummary = WorkflowSummaryBuilder.Build(
+            context.WorkRequest.Title,
+            classification,
+            assignedRoute,
+            context.BusinessUseCase.ToString(),
+            context.DefaultOwner,
+            context.TargetSlaHours,
+            context.WorkflowStatus.ToString());
         context.StepsExecuted.Add(StepName);
 
         return Task.FromResult(new WorkRequestProcessingStepResult(

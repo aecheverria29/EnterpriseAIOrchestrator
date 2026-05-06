@@ -84,7 +84,14 @@ public sealed class ControllerSmokeTests
         Assert.Equal("Approved", response.WorkflowStatus);
         Assert.Equal("Approved: Approved after supervisor review", response.ReviewDecision);
         Assert.False(response.RequiresApprovalAction);
+        Assert.Contains("Approved", response.FinalSummary);
+        Assert.DoesNotContain("InReview", response.FinalSummary);
         Assert.Contains(response.AuditTrail, entry => entry.EventType == "Approved" && entry.PerformedBy == "manager@corp.local");
+
+        var storedRun = await store.GetByRunIdAsync(run.RunId);
+        Assert.NotNull(storedRun);
+        Assert.Equal(response.FinalSummary, storedRun.FinalSummary);
+        Assert.Equal(response.CompletedAt, storedRun.CompletedAt);
     }
 
     [Fact]
@@ -107,7 +114,14 @@ public sealed class ControllerSmokeTests
         Assert.Equal("Rejected", response.WorkflowStatus);
         Assert.Equal("Rejected: Missing supporting documents", response.ReviewDecision);
         Assert.False(response.RequiresApprovalAction);
+        Assert.Contains("Rejected", response.FinalSummary);
+        Assert.DoesNotContain("InReview", response.FinalSummary);
         Assert.Contains(response.AuditTrail, entry => entry.EventType == "Rejected" && entry.PerformedBy == "manager@corp.local");
+
+        var storedRun = await store.GetByRunIdAsync(run.RunId);
+        Assert.NotNull(storedRun);
+        Assert.Equal(response.FinalSummary, storedRun.FinalSummary);
+        Assert.Equal(response.CompletedAt, storedRun.CompletedAt);
     }
 
     [Fact]

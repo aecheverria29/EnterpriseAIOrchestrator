@@ -55,6 +55,22 @@ public sealed class WorkRequestProcessingPipelineTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_CompletedRun_BuildsCompletedSummary()
+    {
+        var pipeline = new WorkRequestProcessingPipeline(OrderedSteps);
+        var workRequest = CreateWorkRequest(
+            RequestPriority.Low,
+            title: "Office request",
+            description: "Need a new chair for the branch office.");
+
+        var result = await pipeline.ExecuteAsync(workRequest);
+
+        Assert.Equal("Completed", result.WorkflowStatus);
+        Assert.Contains("Completed", result.FinalSummary);
+        Assert.DoesNotContain("InReview", result.FinalSummary);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_BuildsExpectedSummary()
     {
         var pipeline = new WorkRequestProcessingPipeline(OrderedSteps);

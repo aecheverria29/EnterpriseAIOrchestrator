@@ -3,24 +3,27 @@
     ViewData["Title"] = "Recent Runs";
 }
 
-<div class="page-heading">
-    <p class="eyebrow">Workflow activity</p>
-    <h1>Recent Runs</h1>
-    <p>The latest runs currently held by the in-memory backend store.</p>
+<div class="page-heading split-heading">
+    <div>
+        <p class="eyebrow">Workflow activity</p>
+        <h1>Recent Runs</h1>
+        <p>Monitor the latest workflow runs currently held by the in-memory backend store.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">Submit Request</a>
 </div>
 
-<div class="table-surface">
+<div class="table-surface enterprise-table">
     <table class="table align-middle">
         <thead>
             <tr>
                 <th>RunId</th>
-                <th>OriginalTitle</th>
-                <th>BusinessUseCase</th>
-                <th>WorkflowStatus</th>
-                <th>RequiresApprovalAction</th>
-                <th>DefaultOwner</th>
-                <th>StartedAt</th>
-                <th></th>
+                <th>Title</th>
+                <th>Business Use Case</th>
+                <th>Workflow Status</th>
+                <th>Requires Review</th>
+                <th>Default Owner</th>
+                <th>Started At</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -35,15 +38,19 @@
             foreach (var run in Model.Runs)
             {
                 <tr>
-                    <td><code>@run.RunId</code></td>
-                    <td>@run.OriginalTitle</td>
+                    <td class="run-id-cell"><code>@run.RunId</code></td>
+                    <td class="text-truncate-cell" title="@run.OriginalTitle">@run.OriginalTitle</td>
                     <td>@run.BusinessUseCase</td>
                     <td><span class="status-badge @BadgeClass(run.WorkflowStatus)">@run.WorkflowStatus</span></td>
-                    <td>@(run.RequiresApprovalAction ? "Yes" : "No")</td>
+                    <td>
+                        <span class="review-indicator @(run.RequiresApprovalAction ? "review-required" : "review-clear")">
+                            @(run.RequiresApprovalAction ? "Yes" : "No")
+                        </span>
+                    </td>
                     <td>@run.DefaultOwner</td>
                     <td>@run.StartedAt.ToString("g")</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-runId="@run.RunId">View</a>
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-runId="@run.RunId">View Details</a>
                     </td>
                 </tr>
             }

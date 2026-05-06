@@ -1,15 +1,18 @@
 @model WorkflowRunDetailsViewModel
 @{
-    ViewData["Title"] = "Request Details";
+    ViewData["Title"] = "Run Details";
 }
 
-<div class="page-heading split-heading">
+<div class="page-heading split-heading run-title-block">
     <div>
-        <p class="eyebrow">Workflow run</p>
+        <p class="eyebrow">Workflow run details</p>
         <h1>@Model.Summary.OriginalTitle</h1>
-        <p><code>@Model.Summary.RunId</code></p>
+        <p class="run-id-line">RunId <code>@Model.Summary.RunId</code></p>
     </div>
-    <span class="status-badge @BadgeClass(Model.Summary.WorkflowStatus)">@Model.Summary.WorkflowStatus</span>
+    <div class="run-title-actions">
+        <span class="status-badge @BadgeClass(Model.Summary.WorkflowStatus)">@Model.Summary.WorkflowStatus</span>
+        <a class="btn btn-outline-secondary" asp-action="Recent">Recent Runs</a>
+    </div>
 </div>
 
 <section class="details-grid">
@@ -18,104 +21,181 @@
         <strong>@Model.Classification</strong>
     </div>
     <div class="metric-card">
-        <span>AssignedRoute</span>
+        <span>Assigned Route</span>
         <strong>@Model.AssignedRoute</strong>
     </div>
     <div class="metric-card">
-        <span>BusinessUseCase</span>
+        <span>Business Use Case</span>
         <strong>@Model.Summary.BusinessUseCase</strong>
     </div>
     <div class="metric-card">
-        <span>DefaultOwner</span>
+        <span>Default Owner</span>
         <strong>@Model.Summary.DefaultOwner</strong>
     </div>
-    <div class="metric-card">
-        <span>RequiresApprovalAction</span>
-        <strong>@(Model.Summary.RequiresApprovalAction ? "Yes" : "No")</strong>
-    </div>
-    <div class="metric-card">
-        <span>TargetSlaHours</span>
-        <strong>@Model.TargetSlaHours</strong>
-    </div>
-    <div class="metric-card">
-        <span>ReviewDecision</span>
-        <strong>@(Model.ReviewDecision ?? "Pending")</strong>
-    </div>
-    <div class="metric-card">
-        <span>StartedAt</span>
-        <strong>@Model.Summary.StartedAt.ToString("g")</strong>
-    </div>
 </section>
 
-<section class="content-grid">
-    <div class="panel">
-        <h2>Summary</h2>
-        <p>@Model.FinalSummary</p>
+<section class="run-layout">
+    <div class="run-main">
+        <section class="panel">
+            <div class="section-heading">
+                <span class="panel-label">A</span>
+                <h2>Run Summary</h2>
+            </div>
+            <div class="summary-kv-grid">
+                <div>
+                    <span>Workflow Status</span>
+                    <strong><span class="status-badge @BadgeClass(Model.Summary.WorkflowStatus)">@Model.Summary.WorkflowStatus</span></strong>
+                </div>
+                <div>
+                    <span>Requires Approval Action</span>
+                    <strong>@(Model.Summary.RequiresApprovalAction ? "Yes" : "No")</strong>
+                </div>
+                <div>
+                    <span>Review Decision</span>
+                    <strong>@(Model.ReviewDecision ?? "Pending")</strong>
+                </div>
+                <div>
+                    <span>Target SLA Hours</span>
+                    <strong>@Model.TargetSlaHours</strong>
+                </div>
+                <div>
+                    <span>Started At</span>
+                    <strong>@Model.Summary.StartedAt.ToString("g")</strong>
+                </div>
+                <div>
+                    <span>Completed At</span>
+                    <strong>@Model.Summary.CompletedAt.ToString("g")</strong>
+                </div>
+            </div>
+            <div class="summary-text">
+                <span class="panel-label">Final summary</span>
+                <p>@Model.FinalSummary</p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="section-heading">
+                <span class="panel-label">B</span>
+                <h2>Processing Outcome</h2>
+            </div>
+            <div class="content-grid compact">
+                <div>
+                    <h3>Steps Executed</h3>
+                    <ul class="step-list">
+                        @foreach (var step in Model.StepsExecuted)
+                        {
+                            <li>@step</li>
+                        }
+                    </ul>
+                </div>
+                <div>
+                    <h3>Validation Messages</h3>
+                    @if (Model.ValidationMessages.Count == 0)
+                    {
+                        <p class="muted">No validation messages.</p>
+                    }
+                    else
+                    {
+                        <ul class="clean-list">
+                            @foreach (var message in Model.ValidationMessages)
+                            {
+                                <li>@message</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="section-heading">
+                <span class="panel-label">D</span>
+                <h2>Audit Trail</h2>
+            </div>
+            <div class="timeline">
+                @foreach (var entry in Model.AuditTrail.OrderBy(entry => entry.Timestamp))
+                {
+                    <div class="timeline-item">
+                        <span>@entry.Timestamp.ToString("g")</span>
+                        <strong>@entry.EventType</strong>
+                        <p>@entry.Message</p>
+                        @if (!string.IsNullOrWhiteSpace(entry.PerformedBy))
+                        {
+                            <small>Performed by @entry.PerformedBy</small>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
     </div>
 
-    @if (Model.Summary.RequiresApprovalAction)
-    {
-        <div class="panel">
-            <h2>Review Action</h2>
-            <form asp-action="Approve" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="PerformedBy" />
-                <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Comment"></textarea>
-                <button type="submit" class="btn btn-success">Approve</button>
-            </form>
-            <form asp-action="Reject" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
-                <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="PerformedBy" />
-                <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Comment"></textarea>
-                <button type="submit" class="btn btn-danger">Reject</button>
-            </form>
-        </div>
-    }
-</section>
-
-<section class="content-grid">
-    <div class="panel">
-        <h2>ValidationMessages</h2>
-        @if (Model.ValidationMessages.Count == 0)
+    <aside class="run-side">
+        @if (Model.Summary.RequiresApprovalAction)
         {
-            <p class="muted">No validation messages.</p>
+            <section class="panel review-panel">
+                <div class="section-heading">
+                    <span class="panel-label">C</span>
+                    <h2>Review Actions</h2>
+                    <p>This run is waiting for a human decision before it can leave review.</p>
+                </div>
+                <form asp-action="Approve" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="field">
+                        <label asp-for="ReviewDecisionInput.PerformedBy"></label>
+                        <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="manager@company.com" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="ReviewDecisionInput.Comment"></label>
+                        <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Approval context or decision notes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Approve Run</button>
+                </form>
+                <form asp-action="Reject" asp-route-runId="@Model.Summary.RunId" method="post" class="review-form">
+                    <div class="field">
+                        <label asp-for="ReviewDecisionInput.PerformedBy"></label>
+                        <input asp-for="ReviewDecisionInput.PerformedBy" name="PerformedBy" class="form-control" placeholder="manager@company.com" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="ReviewDecisionInput.Comment"></label>
+                        <textarea asp-for="ReviewDecisionInput.Comment" name="Comment" class="form-control" rows="3" placeholder="Reason for rejection"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100">Reject Run</button>
+                </form>
+            </section>
         }
         else
         {
-            <ul class="clean-list">
-                @foreach (var message in Model.ValidationMessages)
-                {
-                    <li>@message</li>
-                }
-            </ul>
+            <section class="panel">
+                <div class="section-heading">
+                    <span class="panel-label">C</span>
+                    <h2>Review Actions</h2>
+                    <p>No manual approval action is currently required for this run.</p>
+                </div>
+                <span class="review-indicator review-clear">No action required</span>
+            </section>
         }
-    </div>
-    <div class="panel">
-        <h2>StepsExecuted</h2>
-        <ul class="clean-list">
-            @foreach (var step in Model.StepsExecuted)
-            {
-                <li>@step</li>
-            }
-        </ul>
-    </div>
-</section>
 
-<section class="panel">
-    <h2>AuditTrail</h2>
-    <div class="timeline">
-        @foreach (var entry in Model.AuditTrail)
-        {
-            <div class="timeline-item">
-                <span>@entry.Timestamp.ToString("g")</span>
-                <strong>@entry.EventType</strong>
-                <p>@entry.Message</p>
-                @if (!string.IsNullOrWhiteSpace(entry.PerformedBy))
-                {
-                    <small>@entry.PerformedBy</small>
-                }
+        <section class="panel">
+            <div class="section-heading">
+                <span class="panel-label">Ownership</span>
+                <h2>Operational Routing</h2>
             </div>
-        }
-    </div>
+            <div class="side-facts">
+                <div>
+                    <span>Route</span>
+                    <strong>@Model.AssignedRoute</strong>
+                </div>
+                <div>
+                    <span>Owner</span>
+                    <strong>@Model.Summary.DefaultOwner</strong>
+                </div>
+                <div>
+                    <span>Use Case</span>
+                    <strong>@Model.Summary.BusinessUseCase</strong>
+                </div>
+            </div>
+        </section>
+    </aside>
 </section>
 
 @section Scripts {

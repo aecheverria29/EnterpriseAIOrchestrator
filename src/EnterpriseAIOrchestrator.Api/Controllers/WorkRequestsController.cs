@@ -134,9 +134,10 @@ public sealed class WorkRequestsController : ControllerBase
         }
 
         var auditTrail = existingResult.AuditTrail.ToList();
+        var decisionTimestamp = DateTimeOffset.UtcNow;
         auditTrail.Add(new WorkflowRunAuditEntry(
             runId,
-            DateTimeOffset.UtcNow,
+            decisionTimestamp,
             reviewDecision,
             BuildReviewMessage(reviewDecision, request.Comment),
             request.PerformedBy.Trim()));
@@ -147,9 +148,17 @@ public sealed class WorkRequestsController : ControllerBase
             ReviewDecision = string.IsNullOrWhiteSpace(request.Comment)
                 ? reviewDecision
                 : $"{reviewDecision}: {request.Comment.Trim()}",
-            RequiresApprovalAction = false
-            ,
-            AuditTrail = auditTrail
+            RequiresApprovalAction = false,
+            FinalSummary = WorkflowSummaryBuilder.Build(
+                existingResult.OriginalTitle,
+                existingResult.Classification,
+                existingResult.AssignedRoute,
+                existingResult.BusinessUseCase,
+                existingResult.DefaultOwner,
+                existingResult.TargetSlaHours,
+                reviewDecision),
+            AuditTrail = auditTrail,
+            CompletedAt = decisionTimestamp
         };
 
         await _workflowRunStore.UpdateAsync(updatedResult, cancellationToken);
