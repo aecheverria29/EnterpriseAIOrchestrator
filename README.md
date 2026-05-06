@@ -271,29 +271,3 @@ It demonstrates:
 - Product thinking around small business operational workflows
 
 The project is intentionally scoped: it solves the current workflow problem clearly while leaving a clean path for persistence, security, deployment, and future AI/agent capabilities.
-
-## Deployment Note
-
-The solution is ready for a deployment-focused next step, such as packaging the API and MVC app for Azure App Service. It is not currently documented here as deployed, and no cloud infrastructure is assumed.
-
-## Screenshot Checklist
-
-Recommended screenshots to capture:
-
-- Dashboard with API health and recent workflow metrics
-- Submit Request form with the processing guidance panel
-- Run Details for an `InReview` request showing review actions
-- Run Details after approval or rejection
-- Recent Runs table with multiple statuses
-- Audit Trail timeline from a processed run
-
-## Short LinkedIn Demo Idea
-
-Recommended 45-60 second recording:
-
-1. Open the MVC dashboard.
-2. Submit an access or finance request.
-3. Land on the Run Details page.
-4. Show classification, routing, business use case, workflow status, and audit trail.
-5. Approve or reject the run if it requires review.
-6. Open Recent Runs and show the updated status.
